@@ -10,6 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@glif/filecoin-address": "^3.0.2",
+    "@web3yak/web3domain": "^1.0.13",
+    "dotenv": "^16.4.4",
     "express": "^4.18.2"
   }
 }
