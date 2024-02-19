@@ -14,21 +14,79 @@ const settings = {
 let resolve = new w3d.Web3Domain(settings);
 
 var intro =
-  "This is live API script which you can host on your node webserver application to get wallet address from the Web3 Domain Name.<hr> Eg. <code>http://....../api/?name=brad.eth&#38;currency=ETH</code> ";
+  "This is live API script which you can host on your node webserver application to get wallet address from the Web3 Domain Name.<hr> Eg. <code>http://....../?name=brad.eth&currency=ETH</code> ";
+
+
+  
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
 
 // Define routes
 app.get("/", (req, res) => {
-  const { parameter } = req.query;
-  let output = "Default output";
+  const { param } = req.query;
+  let query = req.query;
 
-  // Check if parameter is passed and handle accordingly
-  if (parameter === "value1") {
-    output = "Output for value1";
-  } else if (parameter === "value2") {
-    output = "Output for value2";
-  } // Add more conditions as needed
+  console.log(query);
 
-  res.send(output);
+  
+  if ((typeof query.address !== 'undefined')) {
+
+    //Search for ETH address
+
+    if (!_ethers.utils.isAddress(query.address)) {
+
+      let fil = fa.validateAddressString(query.address); //Only check t4 address
+      if (fil) {
+        //This is FIL address and convert it ot ETH
+        const convert_t4 = fa.ethAddressFromDelegated(query.address).toString();
+
+       addr_to_domain(convert_t4, res)
+
+      }
+      else {
+        res.json({ error: 'Invalid address', code: 400 })
+      }
+    }
+    else {
+      //ETH address search
+      addr_to_domain(query.address, res)
+    }
+
+  }
+  else if ((typeof query.name !== 'undefined') && (typeof query.type !== 'undefined')) {
+
+    if(query.type == 'uri')
+    {
+      domain_to_uri(query.name, res)
+    }
+    else
+    {
+
+    domain_to_ipfs(query.name, res);
+    }
+  }
+  else {
+    if ((typeof query.name !== 'undefined')) {
+
+      if ((typeof query.currency === 'undefined')) {
+
+        domain_to_addr(query.name, 'ETH', res);
+      }
+      else {
+
+        domain_to_addr(query.name, query.currency, res);
+      }
+
+    }
+    else {
+      res.json({ error: intro })
+    }
+  }
+
 });
 
 //Domain to Address
@@ -109,9 +167,3 @@ function domain_to_uri(name, res) {
     })
     .catch(console.error);
 }
-
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
